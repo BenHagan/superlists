@@ -36,12 +36,14 @@ class NewVisitorTest(unittest.TestCase):
 
         # When she hits enter, the page updates, and now the page lists
         # "1: Buy peacock feathers" as an item in a to-do list
-        inputbox.send_keys(Keys.enter)
+        #pdb.set_trace()
+        inputbox.send_keys(Keys.ENTER)
 
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
         self.assertTrue(
-            any(row.text == '1: Buy peacock feathers' for row in rows)
+            any(row.text == '1: Buy peacock feathers' for row in rows), 
+            "New to-do item did not appear in table"
         )
 
         # There is still a text box inviting her to add another item. She
@@ -57,8 +59,6 @@ class NewVisitorTest(unittest.TestCase):
         # She visits that URL - her to-do list is still there.
 
         # Satisfied, she goes back to sleep
-
-        #pdb.set_trace()
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')
