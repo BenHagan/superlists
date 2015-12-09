@@ -1,0 +1,8 @@
+[live]
+superlists.benhagan.me
+
+[staging]
+superlists-staging.benhagan.me
+
+[local]
+localhost ansible_shh_port=22 ansible_host=127.0.0.1
