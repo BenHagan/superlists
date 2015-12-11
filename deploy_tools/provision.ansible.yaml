@@ -4,13 +4,10 @@
 
   sudo: yes
 
-  tasks: 
-
-    - name: make sure apt is updated
-      command: apt-get update
+  tasks:
 
     - name: make sure required packages are installed
-      apt: pkg=nginx,git,python3,python3-pip state=present
+      apt: pkg=nginx,git,python3,python3-pip state=present update_cache=yes
     - name: make sure virtualenv is installed
       command: pip3 install virtualenv
 
