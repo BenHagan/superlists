@@ -6,6 +6,7 @@ from django.http import HttpRequest
 from lists.views import home_page
 from lists.models import Item, List
 
+
 class HomePageTest(TestCase):
 
     def test_root_url_resolves_to_home_page_view(self):
@@ -17,6 +18,7 @@ class HomePageTest(TestCase):
         response = home_page(request)
         expected_html = render_to_string('home.html')
         self.assertEqual(response.content.decode(), expected_html)
+
 
 class ListViewTest(TestCase):
 
@@ -46,6 +48,7 @@ class ListViewTest(TestCase):
         self.assertNotContains(response, 'other list item 1')
         self.assertNotContains(response, 'other list item 2')
 
+
 class NewListTest(TestCase):
 
     def test_saving_a_POST_request(self):
@@ -72,6 +75,7 @@ class NewListTest(TestCase):
         self.assertTemplateUsed(response, 'home.html')
         expected_error = "You can't have an empty list item"
         self.assertContains(response, expected_error)
+
 
 class NewItemTest(TestCase):
 

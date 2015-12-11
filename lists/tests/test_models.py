@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from lists.models import Item, List
 
+
 class ListAndItemModelTest(TestCase):
 
     def test_saving_and_retrieving_items(self):
