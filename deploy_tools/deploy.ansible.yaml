@@ -1,0 +1,67 @@
+---
+
+- hosts: all
+
+  vars:
+    repo_url: git@bitbucket.org:smoothtexan/superlists.git
+    site_folder: /home/{{ ansible_ssh_user }}/sites/{{ inventory_hostname }}
+    source_folder: "{{ site_folder }}/source"
+    settings_path: "{{ source_folder }}/superlists/settings.py"
+    virtualenv_folder: "{{ site_folder }}/virtualenv"
+
+
+  tasks:
+
+    - name: Create directory structure
+      file: path={{ site_folder }}/{{ item }} state=directory
+      with_items:
+        - database
+        - static
+        - virtualenv
+        - source
+
+    - name: Get latest source (Production)
+      git: repo={{ repo_url }}
+           dest={{ source_folder }}
+           accept_hostkey=True
+           version=LIVE
+           force=yes
+      when: not inventory_hostname | search(".*staging.*")
+
+    - name: Get latest source (Staging)
+      git: repo={{ repo_url }}
+           dest={{ source_folder }}
+           accept_hostkey=True
+           force=yes
+      when: inventory_hostname | search(".*staging.*")
+
+    - name: Django debug off
+      lineinfile:
+        dest={{ settings_path }}
+        regexp='DEBUG = True'
+        line='DEBUG = False'
+
+    - name: Django add allowed hosts
+      lineinfile:
+        dest={{ settings_path }}
+        regexp='ALLOWED_HOSTS = .+'
+        line="ALLOWED_HOSTS = ['{{ inventory_hostname }}']"
+
+    - name: Check if virtualenv exists
+      stat: path={{ virtualenv_folder }}/bin/pip
+      register: virtualenv_exists
+
+    - name: Create virtualenv if necessary
+      command: virtualenv --python=python3 {{ virtualenv_folder }}
+      when: not virtualenv_exists.stat.exists
+
+    - name: Install python dependencies with pip
+      command: "{{ virtualenv_folder }}/bin/pip install -r {{ source_folder }}/requirements.txt"
+
+    - name: Update static files
+      command: ../virtualenv/bin/python3 manage.py collectstatic --noinput
+               chdir={{ source_folder }}
+
+    - name: Update database
+      command: ../virtualenv/bin/python3 manage.py migrate --noinput
+               chdir={{ source_folder }}
