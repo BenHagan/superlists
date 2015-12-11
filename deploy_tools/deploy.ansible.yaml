@@ -27,6 +27,9 @@
            version=LIVE
            force=yes
       when: not inventory_hostname | search(".*staging.*")
+      notify:
+        - restart nginx
+        - restart gunicorn
 
     - name: Get latest source (Staging)
       git: repo={{ repo_url }}
@@ -34,6 +37,9 @@
            accept_hostkey=True
            force=yes
       when: inventory_hostname | search(".*staging.*")
+      notify:
+        - restart nginx
+        - restart gunicorn
 
     - name: Django debug off
       lineinfile:
@@ -61,7 +67,30 @@
     - name: Update static files
       command: ../virtualenv/bin/python3 manage.py collectstatic --noinput
                chdir={{ source_folder }}
+      notify:
+        - restart nginx
 
     - name: Update database
       command: ../virtualenv/bin/python3 manage.py migrate --noinput
                chdir={{ source_folder }}
+
+    - name: make sure nginx is running
+      service: name=nginx state=running
+      become: yes
+      become_method: sudo
+
+    - name: make sure gunicorn is running
+      service: name=gunicorn-{{ inventory_hostname }} state=running
+      become: yes
+      become_method: sudo
+
+  handlers:
+  - name: restart nginx
+    service: name=nginx state=restarted
+    become: yes
+    become_method: sudo
+
+  - name: restart gunicorn
+    service: name=gunicorn-{{ inventory_hostname }} state=restarted
+    become: yes
+    become_method: sudo
